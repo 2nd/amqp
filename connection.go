@@ -349,6 +349,7 @@ func (me *Connection) shutdown(err *Error) {
 		for _, ch := range me.channels {
 			me.closeChannel(ch, err)
 		}
+		time.Sleep(2 * time.Second)
 
 		if err != nil {
 			me.errors <- err
@@ -562,6 +563,7 @@ func (me *Connection) releaseChannel(id uint16) {
 
 // openChannel allocates and opens a channel, must be paired with closeChannel
 func (me *Connection) openChannel() (*Channel, error) {
+	time.Sleep(time.Second)
 	ch, err := me.allocateChannel()
 	if err != nil {
 		return nil, err
