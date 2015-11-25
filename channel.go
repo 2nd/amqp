@@ -6,6 +6,7 @@
 package amqp
 
 import (
+	"errors"
 	"reflect"
 	"sync"
 )
@@ -148,6 +149,8 @@ func (me *Channel) call(req message, res ...message) error {
 
 	if req.wait() {
 		select {
+		case <-me.connection.NotifyClose(make(chan *Error, 1)):
+			return errors.New("Connection closed")
 		case e := <-me.errors:
 			return e
 
