@@ -71,6 +71,7 @@ type Connection struct {
 	destructor sync.Once  // shutdown once
 	sendM      sync.Mutex // conn writer mutex
 	m          sync.Mutex // struct field mutex
+	closed     bool
 
 	conn io.ReadWriteCloser
 
@@ -210,6 +211,7 @@ to use your own custom transport.
 func Open(conn io.ReadWriteCloser, config Config) (*Connection, error) {
 	me := &Connection{
 		conn:      conn,
+		closed:    false,
 		writer:    &writer{bufio.NewWriter(conn)},
 		channels:  make(map[uint16]*Channel),
 		rpc:       make(chan message),
@@ -340,6 +342,10 @@ func (me *Connection) send(f frame) error {
 
 func (me *Connection) shutdown(err *Error) {
 	me.destructor.Do(func() {
+		me.m.Lock()
+		me.closed = true
+		me.m.Unlock()
+
 		if err != nil {
 			for _, c := range me.closes {
 				c <- err
@@ -538,6 +544,10 @@ func (me *Connection) isCapable(featureName string) bool {
 func (me *Connection) allocateChannel() (*Channel, error) {
 	me.m.Lock()
 	defer me.m.Unlock()
+
+	if me.closed {
+		return nil, ErrClosed
+	}
 
 	id, ok := me.allocator.next()
 	if !ok {
