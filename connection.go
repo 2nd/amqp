@@ -357,6 +357,7 @@ func (me *Connection) shutdown(err *Error) {
 
 		me.conn.Close()
 
+		me.m.Lock()
 		for _, c := range me.closes {
 			close(c)
 		}
@@ -365,7 +366,6 @@ func (me *Connection) shutdown(err *Error) {
 			close(c)
 		}
 
-		me.m.Lock()
 		me.noNotify = true
 		me.m.Unlock()
 	})
