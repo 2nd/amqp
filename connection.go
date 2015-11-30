@@ -8,9 +8,11 @@ package amqp
 import (
 	"bufio"
 	"crypto/tls"
+	"fmt"
 	"io"
 	"net"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -350,6 +352,9 @@ func (me *Connection) shutdown(err *Error) {
 			for _, c := range me.closes {
 				c <- err
 			}
+		} else {
+			fmt.Printf("[Tim-Debug] Amqp connection closed with no error. Printing stack trace to find out why")
+			debug.PrintStack()
 		}
 
 		for _, ch := range me.channels {
