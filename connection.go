@@ -559,8 +559,13 @@ func (me *Connection) allocateChannel() (*Channel, error) {
 		return nil, ErrChannelMax
 	}
 
-	ch := newChannel(me, uint16(id))
-	me.channels[uint16(id)] = ch
+	id16 := uint16(id)
+	ch := newChannel(me, id16)
+	if existing, exists := me.channels[id16]; exists {
+		fmt.Printf("[Karl-Debug] channel is being overwritten")
+		existing.Close()
+	}
+	me.channels[id16] = ch
 
 	return ch, nil
 }
