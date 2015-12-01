@@ -576,6 +576,7 @@ func (me *Connection) openChannel() (*Channel, error) {
 	if err != nil {
 		return nil, err
 	}
+	time.Sleep(time.Second)
 
 	if err := ch.open(); err != nil {
 		return nil, err
