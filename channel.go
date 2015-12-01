@@ -8,6 +8,7 @@ package amqp
 import (
 	"reflect"
 	"sync"
+	"time"
 )
 
 // 0      1         3             7                  size+7 size+8
@@ -148,6 +149,11 @@ func (me *Channel) call(req message, res ...message) error {
 
 	if req.wait() {
 		select {
+		case <-time.NewTicker(time.Second * 10).C:
+			if me.connection.closed {
+				return ErrClosed
+			}
+
 		case e := <-me.errors:
 			return e
 
