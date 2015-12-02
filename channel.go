@@ -147,12 +147,20 @@ func (me *Channel) call(req message, res ...message) error {
 		return err
 	}
 
+	failCount := 0
+
 	if req.wait() {
+	retry:
 		select {
-		case <-time.NewTicker(time.Second * 10).C:
+		case <-time.After(time.Second * 10):
 			if me.connection.closed {
 				return ErrClosed
 			}
+			if failCount++; failCount > 3 {
+				me.Close()
+				return ErrClosed
+			}
+			goto retry
 
 		case e := <-me.errors:
 			return e
