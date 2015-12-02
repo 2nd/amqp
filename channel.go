@@ -273,7 +273,7 @@ func (me *Channel) sendOpen(msg message) (err error) {
 func (me *Channel) dispatch(msg message) {
 	switch m := msg.(type) {
 	case *channelClose:
-		me.connection.closeChannel(me, newError(m.ReplyCode, m.ReplyText))
+		me.connection.closeChannel(me, newError(m.ReplyCode, m.ReplyText), false)
 		me.send(me, &channelCloseOk{})
 
 	case *channelFlow:
@@ -421,7 +421,7 @@ It is safe to call this method multiple times.
 
 */
 func (me *Channel) Close() error {
-	defer me.connection.closeChannel(me, nil)
+	defer me.connection.closeChannel(me, nil, false)
 	return me.call(
 		&channelClose{ReplyCode: replySuccess},
 		&channelCloseOk{},
