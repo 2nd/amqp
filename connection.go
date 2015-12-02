@@ -346,6 +346,7 @@ func (me *Connection) shutdown(err *Error) {
 	me.destructor.Do(func() {
 		me.m.Lock()
 		me.closed = true
+		me.noNotify = true
 		me.m.Unlock()
 
 		if err != nil {
@@ -374,10 +375,6 @@ func (me *Connection) shutdown(err *Error) {
 		for _, c := range me.blocks {
 			close(c)
 		}
-
-		me.m.Lock()
-		me.noNotify = true
-		me.m.Unlock()
 	})
 }
 
