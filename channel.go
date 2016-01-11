@@ -29,6 +29,7 @@ type Channel struct {
 	destructor sync.Once
 	sendM      sync.Mutex // sequence channel frames
 	m          sync.Mutex // struct field mutex
+	closed     bool
 
 	connection *Connection
 
@@ -86,6 +87,7 @@ func newChannel(c *Connection, id uint16) *Channel {
 		recv:       (*Channel).recvMethod,
 		send:       (*Channel).sendOpen,
 		errors:     make(chan *Error, 1),
+		closed:     false,
 	}
 }
 
@@ -95,6 +97,8 @@ func (me *Channel) shutdown(e *Error) {
 	me.destructor.Do(func() {
 		me.m.Lock()
 		defer me.m.Unlock()
+
+		me.closed = true
 
 		// Broadcast abnormal shutdown
 		if e != nil {
@@ -318,7 +322,11 @@ func (me *Channel) dispatch(msg message) {
 		// deliveries are in flight and a no-wait cancel has happened
 
 	default:
-		me.rpc <- msg
+		me.m.Lock()
+		if !me.closed {
+			me.rpc <- msg
+		}
+		me.m.Unlock()
 	}
 }
 
