@@ -8,11 +8,9 @@ package amqp
 import (
 	"bufio"
 	"crypto/tls"
-	"fmt"
 	"io"
 	"net"
 	"reflect"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -353,9 +351,6 @@ func (me *Connection) shutdown(err *Error) {
 			for _, c := range me.closes {
 				c <- err
 			}
-		} else {
-			fmt.Printf("[Tim-Debug] Amqp connection closed with no error. Printing stack trace to find out why")
-			debug.PrintStack()
 		}
 
 		for _, ch := range me.channels {
@@ -559,7 +554,6 @@ func (me *Connection) allocateChannel() (*Channel, error) {
 	id16 := uint16(id)
 	ch := newChannel(me, id16)
 	if existing, exists := me.channels[id16]; exists {
-		fmt.Printf("[Karl-Debug] channel is being overwritten")
 		existing.Close()
 	}
 	me.channels[id16] = ch

@@ -6,7 +6,6 @@
 package amqp
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -159,12 +158,6 @@ func (me *Channel) call(req message, res ...message) error {
 		select {
 		case <-time.After(time.Second * 10):
 			if me.connection.closed {
-
-				fmt.Printf("[Debug - me] me.id: %d, me: %p\n", me.id, me)
-				for cid, cp := range me.connection.channels {
-					fmt.Printf("[Debug - other] id: %d, pointer: %p\n", cid, cp)
-				}
-
 				return ErrClosed
 			}
 			if failCount++; failCount > 3 {
